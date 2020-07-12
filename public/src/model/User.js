@@ -72,4 +72,24 @@ class User extends Model{
             .set(contact.toJson());
     };
 
+    getContacts(){
+        return new Promise((s, f)=>{
+            User.getRef()
+            .doc(this.email)
+            .collection('contacts').onSnapshot(docs=>{
+                let ctcs = [];
+                docs.forEach(doc => {
+                    let data = doc.data;
+                    data.id = doc.id;
+                    ctcs.push(data);
+                });
+                this.trigger('ctcschange', docs)
+                s(ctcs);
+            });
+
+        }).catch(err=>{
+            console.error(err);
+        });
+    }
+
 }
