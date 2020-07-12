@@ -54,10 +54,11 @@ class WhatsAppController{
     * Método para a busca dos contatos do usuário*/
     initContacts(){
        
-        this._user.on('ctcschange',docs=>{
+        this._user.on('ctcschange', docs=>{
             
             this.el.contactsMessagesList.innerHTML = '';
             docs.forEach(doc=>{
+                
                 let ctc = doc.data();
                 let div = document.createElement('div');
                 div.className ='contact-item';
@@ -80,10 +81,10 @@ class WhatsAppController{
                     <div class="_3j7s9">
                         <div class="_2FBdJ">
                             <div class="_25Ooe">
-                                <span dir="auto" title="${ctc.name}" class="_1wjpf js-name">${ctc.name}</span>
+                                <span dir="auto" title="" class="_1wjpf js-name"></span>
                             </div>
                             <div class="_3Bxar">
-                                <span class="_3T2VG js-last-msg">18:03</span>
+                                <span class="_3T2VG js-last-msg"></span>
                             </div>
                         </div>
                         <div class="_1AwDx">
@@ -98,7 +99,7 @@ class WhatsAppController{
                                             </svg>
                                         </span>
                                     </div>
-                                    <span dir="ltr" class="_1wjpf _3NFp9 js-msg-ok">Ok
+                                    <span dir="ltr" class="_1wjpf _3NFp9 js-msg-ok">
                                     </span>
                                         <div class="_3Bxar">
                                             <span>
@@ -114,17 +115,32 @@ class WhatsAppController{
                     </div>`;
                 let spanName = div.querySelector('.js-name');
                     spanName.title = ctc.name;
-                    spanName.text = ctc.name;
+                    spanName.innerHTML = ctc.name;
                 let spanLastTimeMsg = div.querySelector('.js-last-msg');
-                    spanLastTimeMsg.text = ctc.lastMessageTime;
+                    spanLastTimeMsg.innerHTML = ctc.lastMessageTime;
                 let spanLastMsg = div.querySelector('.js-msg-ok');
-                    spanLastMsg.text = ctc.lastMessage; 
+                    spanLastMsg.innerHTML = ctc.lastMessage; 
                 if (ctc.photo){
                     let img = div.querySelector('.photo');
                     img.src = ctc.photo;
                     img.show();
                 }
                 
+                div.on('click', e=>{
+                   
+                    this.el.activeName.innerHTML = ctc.name;
+                    this.el.activeStatus.innerHTML = ctc.status;
+                    if (ctc.photo){
+                        let img = this.el.activePhoto;
+                        img.src = ctc.photo;
+                        img.show();
+                    }
+                    this.el.home.hide();
+                    this.el.main.css({
+                        display: 'flex'
+                    });
+
+                });
                 this.el.contactsMessagesList.appendChild(div);
 
             });

@@ -88,7 +88,7 @@ class User extends Model{
             });
 
         }).catch(err=>{
-            console.error(err);
+            f(err);
         });
     }
 
