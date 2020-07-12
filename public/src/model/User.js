@@ -1,4 +1,8 @@
-
+/**
+ *Class Entity para tratamento de dados de usuários
+ * @class User
+ * @extends {Model}
+ */
 class User extends Model{
 
     constructor(idEmail){
@@ -40,14 +44,6 @@ class User extends Model{
                 s(doc);
             });
 
-            /*
-            // Statico
-            User.findByEmail(idEmail).get().then(doc => {
-                this.fromJson(doc.data());
-                s(doc);
-            }).catch(err=>{
-                f(err);
-            });*/
         });
     }
 
@@ -62,5 +58,18 @@ class User extends Model{
     static findByEmail(email){
         return User.getRef().doc(email);
     }
+
+    /**
+     * Método para o tratamento de inserção de 
+     * um novo usuário
+     * @param {*} contact Os dados do usuario a ser inserido
+     */
+    addContact(contact){
+        return User.getRef()
+            .doc(this.email)
+            .collection('contacts')
+            .doc(btoa(contact.email))
+            .set(contact.toJson());
+    };
 
 }

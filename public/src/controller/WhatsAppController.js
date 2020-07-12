@@ -118,8 +118,11 @@ class WhatsAppController{
         };
 
     }/** fim de  elementsPrototype()*/
-
-    initEvents(){
+/**
+ * Atribuições de eventos dos componetes da tela
+ * @memberof WhatsAppController
+ */
+initEvents(){
 
         this.el.myPhoto.on('click', e=>{
             this.closeAllLeftPanel();
@@ -142,10 +145,6 @@ class WhatsAppController{
 
         this.el.btnClosePanelEditProfile.on('click', e=>{
             this.el.panelEditProfile.removeClass('open');
-        });
-
-        this.el.btnClosePanelAddContact.on('click', e=>{
-            this.el.panelAddContact.removeClass('open');
         });
 
         this.el.photoContainerEditProfile.on('click', e=>{
@@ -186,6 +185,30 @@ class WhatsAppController{
                     display: 'flex'
                 })
             });
+        });
+
+        /**Configuração do evento de submmit para a o form de inserção de novos usuarios */
+
+        this.el.btnClosePanelAddContact.on('click', e=>{
+            this.el.panelAddContact.removeClass('open');
+        });
+
+        this.el.formPanelAddContact.on('submit', e=>{
+            e.preventDefault();
+            let formData = new FormData(this.el.formPanelAddContact);
+            let contact = new User(formData.get('email'));
+            contact.on('datachange', data=>{
+                if (data.name){
+                    this._user.addContact(contact).then(()=>{
+                        console.info('Contato Adicionado!');
+                        this.el.btnClosePanelAddContact.click();
+                    });
+                }else{
+                    console.error('Erro: usuário não encontrado');                    
+                }
+            })
+            
+
         });
 
         /**Eventos para a anexar uma foto */
