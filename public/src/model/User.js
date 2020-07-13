@@ -59,7 +59,7 @@ class User extends Model{
     }
 
     static getRef(){
-        return Firebase.db().collection('users');
+        return Firebase.db().collection('/users');
     }
 
     static findByEmail(email){
