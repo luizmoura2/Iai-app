@@ -299,9 +299,16 @@ initEvents(){
             let contact = new User(formData.get('email'));
             contact.on('datachange', data=>{
                 if (data.name){
-                    this._user.addContact(contact).then(()=>{
-                        console.info('Contato Adicionado!');
-                        this.el.btnClosePanelAddContact.click();
+
+                    contact.chatId = chat.id;
+                    this._user.chatId = chat.id;
+                    contact.addContact(this._user);
+
+                    Chat.createIfNotExist(this._user.email, contact.email).then(chat=>{
+                        this._user.addContact(contact).then(()=>{
+                            console.info('Contato Adicionado!');
+                            this.el.btnClosePanelAddContact.click();
+                        });
                     });
                 }else{
                     console.error('Erro: usuário não encontrado');                    
