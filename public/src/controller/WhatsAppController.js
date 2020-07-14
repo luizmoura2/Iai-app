@@ -127,8 +127,8 @@ class WhatsAppController{
                 }
                 
                 div.on('click', e=>{
-                   
-                    this.el.activeName.innerHTML = ctc.name;
+                    this.setAtiveChat(ctc);
+                    /*this.el.activeName.innerHTML = ctc.name;
                     this.el.activeStatus.innerHTML = ctc.status;
                     if (ctc.photo){
                         let img = this.el.activePhoto;
@@ -138,7 +138,7 @@ class WhatsAppController{
                     this.el.home.hide();
                     this.el.main.css({
                         display: 'flex'
-                    });
+                    });*/
 
                 });
                 this.el.contactsMessagesList.appendChild(div);
@@ -302,8 +302,6 @@ initEvents(){
                    console.log('user ', this._user.email, 'contact ',contact.email);
                     Chat.createIfNotExist(btoa(this._user.email).toString(), btoa(contact.email).toString())
                         .then(chat=>{
-
-                            console.log(contact, chat);
                             contact.chatId = chat.id;
                             this._user.chatId = chat.id;
                             contact.addContact(this._user);
@@ -317,8 +315,6 @@ initEvents(){
                     console.error('Erro: usuário não encontrado');                    
                 }
             })
-            
-
         });
 
         /**Eventos para a anexar uma foto */
@@ -509,6 +505,9 @@ initEvents(){
         });
 
         this.el.btnSend.on('click', e=>{
+            Message.send(this._contactActive.chatId, this._user.email, 'text', this.el.inputText.innerHTML);
+            this.el.inputText.innerHTML= '';
+            this.el.panelEmojis.removeClass('open');
             console.log(this.el.inputText.innerHTML);
         });
 
@@ -548,6 +547,21 @@ initEvents(){
 
 
     };/* Fim initEvents */
+
+    setAtiveChat(ctc){
+        this._contactActive = ctc;
+        this.el.activeName.innerHTML = ctc.name;
+        this.el.activeStatus.innerHTML = ctc.status;
+        if (ctc.photo){
+            let img = this.el.activePhoto;
+            img.src = ctc.photo;
+            img.show();
+        }
+        this.el.home.hide();
+        this.el.main.css({
+            display: 'flex'
+        });
+    }
 
     closeRecordMicrofone(){
         this.el.recordMicrophone.hide();

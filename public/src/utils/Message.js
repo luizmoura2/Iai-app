@@ -291,4 +291,21 @@ class Message extends Model{
         div.firstElementChild.classList.add(className);
     }
 
+    static send(chatId, from, type, content){
+        return Message.getRef(chatId).add({
+            content: content,
+            timeStamp: new Date(),
+            status: 'wait',
+            type: type,
+            from: from
+        })
+    };
+
+    static getRef(chatId){
+        return Firebase.db()
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages');
+    }
+
 }
