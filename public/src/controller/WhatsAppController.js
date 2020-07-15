@@ -566,24 +566,36 @@ initEvents(){
             display: 'flex'
         });
 
+        let container = this.el.panelMessagesContainer;
+        container.innerHTML = '';
+
         Message.getRef(this._contactActive.chatId)
             .orderBy('timeStamp')
             .onSnapshot( docs => {
-                this.el.panelMessagesContainer.innerHTML = '';
+                let scrollTop = container.scrollTop;
+                let scrollTopMax = container.scrollHeight - container.offsetHeight;
+                let autoScroll = (scrollTop >= scrollTopMax)
                 docs.forEach(doc=>{
                     let data = doc.data();
                     data.id = doc.id;                                    
 
-                    if (!this.el.panelMessagesContainer.querySelector('#_'+data.id)){
+                    if (!container.querySelector('#_'+data.id)){
+                    
                         let message = new Message();
                         message.fromJson(data);  
                         let own = (data.from === this._user.email);
                         let view = message.getViewElement(own);
-                        this.el.panelMessagesContainer.appendChild(view);
-                    };
-                    
+                        container.appendChild(view);
 
-                })
+                    };
+                });
+
+                if (autoScroll){
+                    container.scrollTop = container.scrollHeight - container.offsetHeight;
+                }else{
+                    container.scrollTop = scrollTop;
+                }
+
             });
     }
 
