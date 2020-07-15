@@ -549,6 +549,10 @@ initEvents(){
     };/* Fim initEvents */
 
     setAtiveChat(ctc){
+        
+        if (this._contactActive){
+            Message.getRef(this._contactActive.chatId).onSnapshot(()=>{});
+        }
         this._contactActive = ctc;
         this.el.activeName.innerHTML = ctc.name;
         this.el.activeStatus.innerHTML = ctc.status;
@@ -561,6 +565,26 @@ initEvents(){
         this.el.main.css({
             display: 'flex'
         });
+
+        Message.getRef(this._contactActive.chatId)
+            .orderBy('timeStamp')
+            .onSnapshot( docs => {
+                this.el.panelMessagesContainer.innerHTML = '';
+                docs.forEach(doc=>{
+                    let data = doc.data();
+                    data.id = doc.id;                                    
+
+                    if (!this.el.panelMessagesContainer.querySelector('#_'+data.id)){
+                        let message = new Message();
+                        message.fromJson(data);  
+                        let own = (data.from === this._user.email);
+                        let view = message.getViewElement(own);
+                        this.el.panelMessagesContainer.appendChild(view);
+                    };
+                    
+
+                })
+            });
     }
 
     closeRecordMicrofone(){
