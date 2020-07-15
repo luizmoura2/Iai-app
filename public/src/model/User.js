@@ -79,20 +79,23 @@ class User extends Model{
             .set(contact.toJson());
     };
 
-    getContacts(){
+    getContacts(filter = ''){
+        
         return new Promise((s, f)=>{
             User.getRef()
-            .doc(this.email)
-            .collection('contacts').onSnapshot(docs=>{
-                let ctcs = [];
-                docs.forEach(doc => {
-                    let data = doc.data;
-                    data.id = doc.id;
-                    ctcs.push(data);
-                });
-                this.trigger('ctcschange', docs)
-                s(ctcs);
-            });
+                        .doc(this.email)
+                        .collection('contacts')
+                        .where('name', '>=', filter)
+                        .onSnapshot(docs=>{
+                            let ctcs = [];
+                            docs.forEach(doc => {
+                                let data = doc.data;
+                                data.id = doc.id;
+                                ctcs.push(data);
+                            });
+                            this.trigger('ctcschange', docs)
+                            s(ctcs);
+                        });
 
         }).catch(err=>{
             f(err);

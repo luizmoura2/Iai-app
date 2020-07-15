@@ -224,6 +224,12 @@ class WhatsAppController{
  */
 initEvents(){
 
+        this.el.inputSearchContacts.on('keyup', e=>{
+            
+            this._user.getContacts(this.el.inputSearchContacts.value);
+
+        });
+
         this.el.myPhoto.on('click', e=>{
             this.closeAllLeftPanel();
             this.el.panelEditProfile.show();
