@@ -582,17 +582,30 @@ initEvents(){
                 let scrollTopMax = container.scrollHeight - container.offsetHeight;
                 let autoScroll = (scrollTop >= scrollTopMax)
                 docs.forEach(doc=>{
+                    
                     let data = doc.data();
                     data.id = doc.id;                                    
+                    let message = new Message();
+                    message.fromJson(data);
 
-                    if (!container.querySelector('#_'+data.id)){
-                    
-                        let message = new Message();
-                        message.fromJson(data);  
-                        let own = (data.from === this._user.email);
+                    let divData = container.querySelector('#_'+data.id);
+                    let own = (data.from === this._user.email);
+                    if (!divData){
+
+                        
+                        if (!own){
+                            
+                            doc.ref.set({
+                                status: 'read'
+                            },{
+                                merge: true
+                            });
+                        }
                         let view = message.getViewElement(own);
                         container.appendChild(view);
 
+                    }else if (own){
+                        divData.querySelector('.message-status').innerHTML = message.getStatusViewElement().outerHTML;
                     };
                 });
 
