@@ -86,8 +86,8 @@ class Message extends Model{
                     <div class="_3_7SH _3qMSo ">
                         <div class="KYpDv">
                             <div>
-                                <div class="_3v3PK" style="width: 330px; height: 330px;">
-                                    <div class="_34Olu">
+                                <div class="_3v3PK js-dim-foto" style="width: 330px; height: 330px;">
+                                    <div class="_34Olu js-foto">
                                         <div class="_2BzIU">
                                             <div class="_2X3l6">
                                                 <svg class="_1UDDE" width="50" height="50" viewBox="0 0 43 43">
@@ -103,7 +103,7 @@ class Message extends Model{
                                             </div>
                                         </div>
                                     </div>
-                                    <img src="#" class="_1JVSX message-photo" style="width: 100%; display:none">
+                                    <img src="${this.content}" class="_1JVSX message-photo" style="width: 100%; display:none">
                                     <div class="_1i3Za"></div>
                                 </div>
                                 <div class="message-container-legend">
@@ -113,7 +113,7 @@ class Message extends Model{
                                 </div>
                                 <div class="_2TvOE">
                                     <div class="_1DZAH text-white" role="button">
-                                        <span class="message-time">17:22</span>
+                                        <span class="message-time"></span>
                                         
                                     </div>
                                 </div>
@@ -128,6 +128,15 @@ class Message extends Model{
                             </span>
                         </div>
                 </div>`;
+                let imgPhoto = div.querySelector('.message-photo')
+                imgPhoto.on('load', e=>{
+                    imgPhoto.show();
+                    div.querySelector('.js-foto').hide();
+                    div.querySelector('.js-dim-foto').css({
+                        height: 'auto',
+                        width: 'auto'
+                    });
+                })
             break;
             case 'document' :
                 div.innerHTML = ` 
@@ -277,6 +286,31 @@ class Message extends Model{
         div.firstElementChild.classList.add(className);
 
         return div;
+    }
+
+    static sendImage(chatId, from, file){
+        
+        return new Promise((s, f)=>{
+
+            let uploadTask = Firebase.hd().ref(from)
+                    .child(Date.now()+'_'+file.name)
+                    .put(file);
+
+            uploadTask.on('state_changed', e=>{
+                console.info('upload', e);
+            }, err =>{
+                console.log(err);
+            }, ()=>{
+                uploadTask.snapshot.ref.getDownloadURL().then(url=>{                 
+                    
+                    Message.send(chatId, from, 'image', url).then(()=>{
+                        s();
+                    });
+
+                });
+            });
+        })
+
     }
 
     static send(chatId, from, type, content){

@@ -16147,3 +16147,7 @@ html[dir=rtl] ._2ICcy:after{
     width: auto;
     text-align: center;
 }
+
+.message-time{
+    color: #05618b;
+}

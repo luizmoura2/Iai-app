@@ -18,8 +18,7 @@ class Firebase{
     init(){
         // Initialize Firebase
         if (!window._initFirebase){
-            firebase.initializeApp(this._config);
-            
+            firebase.initializeApp(this._config);            
             /*firebase.firestore().settings({
                 timestampsInSnapshots: true
             });*/
