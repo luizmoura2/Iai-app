@@ -128,18 +128,6 @@ class WhatsAppController{
                 
                 div.on('click', e=>{
                     this.setAtiveChat(ctc);
-                    /*this.el.activeName.innerHTML = ctc.name;
-                    this.el.activeStatus.innerHTML = ctc.status;
-                    if (ctc.photo){
-                        let img = this.el.activePhoto;
-                        img.src = ctc.photo;
-                        img.show();
-                    }
-                    this.el.home.hide();
-                    this.el.main.css({
-                        display: 'flex'
-                    });*/
-
                 });
                 this.el.contactsMessagesList.appendChild(div);
 
@@ -447,7 +435,6 @@ initEvents(){
         this.el.inputDocument.on('change', e=>{
             if (this.el.inputDocument.files.length){
                 let file = this.el.inputDocument.files[0];
-                console.log(file.type);
                 this._documentPreviewController = new DocumentPreviewController(file);
                 this._documentPreviewController.getPreviewData().then(data=>{
                     switch (data.type){
@@ -490,7 +477,36 @@ initEvents(){
         });
 
         this.el.btnSendDocument.on('click', e=>{
-            console.log('enviar document');
+            let file = this.el.inputDocument.files[0];
+            let bse64 = this.el.imgPanelDocumentPreview.src;
+            if (file.type === 'application/pdf'){
+
+                Base64.toFile(bse64).then(filePreview=>{
+
+                    Message.sendDocument(this._contactActive.chatId, 
+                        this._user.email, 
+                        file, 
+                        filePreview, 
+                        this.el.infoPanelDocumentPreview.innerHTML
+                    ).then(resp=>{
+                        console.log(resp);
+                    });;
+
+                });
+               
+            }else{
+
+                Message.sendDocument(this._contactActive.chatId, 
+                        this._user.email, 
+                        file
+                    ).then(resp=>{
+                        console.log(resp);
+                    });
+            }
+            //let view = message.getViewElement(own);
+            //this.el.panelMessagesContainer.appendChild(view);
+            this.el.btnClosePanelDocumentPreview.click();
+            
         });
 
         /**Eventos par a manipulação da gravação de voz- Microfone */
@@ -501,7 +517,7 @@ initEvents(){
             this._microphoneController = new MicrophoneController();
 
             this._microphoneController.on('ready', sound=>{
-                console.log('ready');
+               
                 this._microphoneController.startRecord();
                 
             });
@@ -627,7 +643,6 @@ initEvents(){
                     let divData = container.querySelector('#_'+data.id);
                     let own = (data.from === this._user.email);
                     if (!divData){
-
                         
                         if (!own){
                             
@@ -640,7 +655,13 @@ initEvents(){
                         let view = message.getViewElement(own);
                         container.appendChild(view);
 
-                    }else if (own){
+                    }else{
+                        let view = message.getViewElement(own);
+                        container.querySelector('#_'+data.id).innerHTML = view.innerHTML;
+
+                    }                    
+                    
+                    if (divData && own){
                         divData.querySelector('.message-status').innerHTML = message.getStatusViewElement().outerHTML;
                     };
                 });

@@ -38,10 +38,53 @@ class Message extends Model{
         this._data.status = value;
     }
 
+    get preview(){ 
+        return this._data.preview;
+    }
+    set preview(value){ 
+        this._data.preview = value;
+    }
+
+    get info(){ 
+        return this._data.info;
+    }
+    set info(value){ 
+        this._data.info = value;
+    }
+
+    get filetype(){ 
+        return this._data.filetype;
+    }
+    set filetype(value){ 
+        this._data.filetype = value;
+    }
+
+    get size(){ 
+        return this._data.size;
+    }
+    set size(value){ 
+        this._data.size = value;
+    }
+
+    get filename(){ 
+        return this._data.filename;
+    }
+    set filename(value){ 
+        this._data.filename = value;
+    }
+
+    get from(){ 
+        return this._data.from;
+    }
+    set from(value){ 
+        this._data.from = value;
+    } 
+
     getViewElement(own = true){
         let div = document.createElement('div');
+        div.id = '_'+this.id;
         div.className = 'message';
-
+        console.log('this',this);
         switch (this.type){
             case 'contact':
                 div.innerHTML = `
@@ -128,7 +171,9 @@ class Message extends Model{
                             </span>
                         </div>
                 </div>`;
-                let imgPhoto = div.querySelector('.message-photo')
+                let imgPhoto = div.querySelector('.message-photo');
+                let msg = div.querySelector('.message-text');
+                msg.innerHTML = 'pendente...';//this._user.name;  
                 imgPhoto.on('load', e=>{
                     imgPhoto.show();
                     div.querySelector('.js-foto').hide();
@@ -143,13 +188,13 @@ class Message extends Model{
                     <div class="_3_7SH _1ZPgd ">
                         <div class="_1fnMt _2CORf">
                             <a class="_1vKRe" href="#">
-                                <div class="_2jTyA" style="background-image: url()"></div>
+                                <div class="js-preview" style="background-image: url(${this.preview})"></div>
                                 <div class="_12xX7">
                                     <div class="_3eW69">
-                                        <div class="JdzFp message-file-icon icon-doc-pdf"></div>
+                                        <div class="JdzFp message-file-icon js-icon"></div>
                                     </div>
                                     <div class="nxILt">
-                                        <span dir="auto" class="message-filename">Arquivo.pdf</span>
+                                        <span dir="auto" class="message-filename">${this.filename}</span>
                                     </div>
                                     <div class="_17viz">
                                         <span data-icon="audio-download" class="message-file-download">
@@ -167,9 +212,9 @@ class Message extends Model{
                                 </div>
                             </a>
                             <div class="_3cMIj">
-                                <span class="PyPig message-file-info">32 páginas</span>
-                                <span class="PyPig message-file-type">PDF</span>
-                                <span class="PyPig message-file-size">4 MB</span>
+                                <span class="PyPig message-file-info">${this.info}</span>
+                                <span class="PyPig message-file-type">${this.filetype}</span>
+                                <span class="PyPig message-file-size">${this.size}</span>
                             </div>
                             <div class="_3Lj_s">
                                 <div class="_1DZAH" role="button">
@@ -179,6 +224,20 @@ class Message extends Model{
                             </div>
                         </div>
                 </div>`;
+               
+                let preview = div.querySelector('.js-preview');
+                let icon = div.querySelector('.js-icon');
+                if (this.filetype === 'application/pdf'){
+                    icon.classList.add('icon-doc-pdf');
+                    preview.classList.add('_2jTyA');
+                    
+                }else{
+                    icon.classList.add('icon-doc-generic');
+                    preview.classList.add('_2jTyAd');
+                }
+                div.on('click', e=>{
+                    window.open(this.content);
+                })
             break;
             case 'audio':
                 div.innerHTML = `
@@ -261,7 +320,7 @@ class Message extends Model{
             break;
             default:
                 div.innerHTML = `
-                    <div class="font-style _3DFk6 tail" id = "_${this.id}">
+                    <div class="font-style _3DFk6 tail" id = "">
                         <span class="tail-container"></span>
                         <span class="tail-container highlight"></span>
                         <div class="Tkt2p">
@@ -288,8 +347,48 @@ class Message extends Model{
         return div;
     }
 
-    static sendImage(chatId, from, file){
+    static sendDocument(chatId, from, file, filePreview, info){
         
+        return Message.send(chatId, from, 'document', '').then(msgRef=>{            
+                Message.upload(file, from).then(urlFile=>{
+                    urlFile.ref.getDownloadURL().then(urlF=>{                 
+                        let downLoadFile = urlF;
+                        if (filePreview){ 
+                            Message.upload(filePreview, from).then(urlPreview=>{
+                                    urlPreview.ref.getDownloadURL().then(urlP=>{ 
+                                        let downLoadPreview = urlP; 
+                                    
+                                        msgRef.set({
+                                            content: downLoadFile,
+                                            preview: downLoadPreview,
+                                            filename: file.name,
+                                            size: file.size,
+                                            filetype: file.type,
+                                            status: 'sent',
+                                            info: info
+                                        },{
+                                            merge: true
+                                        });
+                                    });
+                            });
+                        }else{
+                            msgRef.set({
+                                content: downLoadFile,                                
+                                filename: file.name,
+                                size: file.size,
+                                filetype: 'Desc.',
+                                status: 'sent',
+                                info: 'Arquivo: '
+                            },{
+                                merge: true
+                            });
+                        }
+                    });  
+                });            
+        });
+    }
+
+    static upload(file, from){
         return new Promise((s, f)=>{
 
             let uploadTask = Firebase.hd().ref(from)
@@ -299,16 +398,27 @@ class Message extends Model{
             uploadTask.on('state_changed', e=>{
                 console.info('upload', e);
             }, err =>{
-                console.log(err);
+                f(err);
             }, ()=>{
-                uploadTask.snapshot.ref.getDownloadURL().then(url=>{                 
+                s(uploadTask.snapshot);
+            });
+        })
+
+    }
+
+    static sendImage(chatId, from, file){
+        
+        return new Promise((s, f)=>{
+
+            Message.upload(file, from).then(snapshot=>{
+                snapshot.ref.getDownloadURL().then(url=>{                 
                     
                     Message.send(chatId, from, 'image', url).then(()=>{
                         s();
                     });
 
                 });
-            });
+            })//.then(()=>{s();});            
         })
 
     }
@@ -322,12 +432,13 @@ class Message extends Model{
                 type: type,
                 from: from
             }).then(result=>{
-                result.parent.doc(result.id).set({
+                let docRef = result.parent.doc(result.id)
+                docRef.set({
                     status: 'sent' //altera somente o status
                 },{
                     merge:true //altera somente o status, matem os outros dados
                 }).then(()=>{
-                    s();
+                    s(docRef);
                 });
             });
         });
