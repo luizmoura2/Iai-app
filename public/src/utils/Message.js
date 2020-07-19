@@ -427,11 +427,12 @@ class Message extends Model{
     }
 
     static sendAudio(chatId, from, file, metadata, photo ){
+        
         return Message.send(chatId, from, 'audio', '').then(msgRef=>{
                 Message.upload(file, from).then(snapshot=>{
                     
                     snapshot.ref.getDownloadURL().then(downLoadFile=>{  
-                                       
+
                         msgRef.set({
                             content: downLoadFile,
                             size: file.size,
@@ -448,7 +449,9 @@ class Message extends Model{
     };
 
     static sendContact(chatId, from, contact){
+
         return Message.send(chatId, from, 'contact', contact);
+
     }
 
     static sendDocument(chatId, from, file, filePreview, info){
@@ -522,7 +525,7 @@ class Message extends Model{
                     });
 
                 });
-            });//.then(()=>{s();});            
+            });          
         });
 
     }
