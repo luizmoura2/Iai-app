@@ -3,6 +3,7 @@ class WhatsAppController{
     constructor(){
 
         this._firebase = new Firebase();
+        this._docs = [];
         this.initAuth();
         this.elementsPrototype();
         this.loadElements();
@@ -55,11 +56,12 @@ class WhatsAppController{
     initContacts(){
        
         this._user.on('ctcschange', docs=>{
-            
+            this._docs = [];
             this.el.contactsMessagesList.innerHTML = '';
             docs.forEach(doc=>{
-                
+               
                 let ctc = doc.data();
+                this._docs.push(ctc);
                 let div = document.createElement('div');
                 div.className ='contact-item';
                 div.innerHTML = `
@@ -133,6 +135,7 @@ class WhatsAppController{
 
             });
         });
+
         this._user.getContacts();
     }
 
@@ -267,11 +270,6 @@ initEvents(){
 
         });
 
-        this.el.formPanelAddContact.on('submit', e=>{
-            e.preventDefault();
-            let formData = new FormData(this.el.formPanelAddContact);
-        });
-
         this.el.contactsMessagesList.querySelectorAll('.contact-item').forEach(item=>{
             item.on('click', e=>{
                 this.el.home.hide();
@@ -293,15 +291,14 @@ initEvents(){
             let contact = new User(formData.get('email'));
             contact.on('datachange', data=>{
                 if (data.name){
-                   console.log('user ', this._user.email, 'contact ',contact.email);
+                   
                     Chat.createIfNotExist(btoa(this._user.email).toString(), btoa(contact.email).toString())
                         .then(chat=>{
                             contact.chatId = chat.id;
                             this._user.chatId = chat.id;
                             contact.addContact(this._user);
                             this._user.addContact(contact).then(()=>{
-                                console.info('Contato Adicionado!');
-                                this.el.btnClosePanelAddContact.click();
+                               this.el.btnClosePanelAddContact.click();
                             });
                     });
 
@@ -413,13 +410,18 @@ initEvents(){
         })
 
         /** Eventos para anexar contatos */
-        this.el.btnAttachContact.on('click', e=>{
-            console.log('contact');
-            this.el.modalContacts.show();
+        this.el.btnAttachContact.on('click', e=>{            
+            this._contatsController = new ContactsController(this._docs, this.el.modalContacts);
+            this._contatsController.on('select', contact=>{
+                Message.sendContact(this._contactActive.chatId, this._user.email, contact )
+            });
+            this._contatsController.open();
         });
 
         this.el.btnCloseModalContacts.on('click', e=>{
-            this.el.modalContacts.hide();
+
+            this._contatsController.close();
+
         });
         
         /** rotinas para anexar documentos  */
@@ -490,7 +492,7 @@ initEvents(){
                         this.el.infoPanelDocumentPreview.innerHTML
                     ).then(resp=>{
                         console.log(resp);
-                    });;
+                    });
 
                 });
                
@@ -503,8 +505,7 @@ initEvents(){
                         console.log(resp);
                     });
             }
-            //let view = message.getViewElement(own);
-            //this.el.panelMessagesContainer.appendChild(view);
+           
             this.el.btnClosePanelDocumentPreview.click();
             
         });
@@ -607,7 +608,7 @@ initEvents(){
     };/* Fim initEvents */
 
     setAtiveChat(ctc){
-        
+        console.log(ctc);
         if (this._contactActive){
             Message.getRef(this._contactActive.chatId).onSnapshot(()=>{});
         }
@@ -642,6 +643,8 @@ initEvents(){
 
                     let divData = container.querySelector('#_'+data.id);
                     let own = (data.from === this._user.email);
+                    let view = message.getViewElement(own);
+
                     if (!divData){
                         
                         if (!own){
@@ -652,18 +655,39 @@ initEvents(){
                                 merge: true
                             });
                         }
-                        let view = message.getViewElement(own);
+                        
                         container.appendChild(view);
 
                     }else{
-                        let view = message.getViewElement(own);
-                        container.querySelector('#_'+data.id).innerHTML = view.innerHTML;
-
+                        
+                        let parent = divData.parentNode;
+                        parent.replaceChild(view, divData);
+                        //container.querySelector('#_'+data.id).innerHTML = view.innerHTML;
                     }                    
                     
                     if (divData && own){
                         divData.querySelector('.message-status').innerHTML = message.getStatusViewElement().outerHTML;
                     };
+
+                    if ( message.type === 'contact' ){
+                        view.querySelector('.btn-message-send').on('click', e=>{
+                            Chat.createIfNotExist(
+                                    btoa(this._user.email).toString(), 
+                                    btoa(message.content.email)
+                                ).then(chat=>{
+                                    let contact = new User(message.content.email);
+                                    contact.on('datachange', data=>{
+                                        contact.chatId = chat.id;
+                                        this._user.chatId = chat.id;                                        
+                                        this._user.addContact(contact);                                        
+                                        contact.addContact(this._user);
+                                        console.log(contact._data);
+                                        this.setAtiveChat(contact._data);
+                                    });                           
+                    });
+                        });
+                    }
+
                 });
 
                 if (autoScroll){

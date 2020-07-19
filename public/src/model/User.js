@@ -100,6 +100,6 @@ class User extends Model{
         }).catch(err=>{
             f(err);
         });
-    }
+    };
 
 }

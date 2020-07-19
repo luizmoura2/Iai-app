@@ -24,16 +24,12 @@ class Chat extends Model{
     }
 
     static find(ownEmail, ctcEmail){
-        
-        return Chat.getRef()
-                    .where(ownEmail, '==', true)
-                    .where(ctcEmail, '==', true)
-                    .get();
-
+      
+        return Chat.getRef().where('users.'+ctcEmail, '==', true).where('users.'+ownEmail, '==', true).get();
     }
 
     static create(ownEmail, ctcEmail){
-        console.log('own ',ownEmail, 'ctc ',ctcEmail);
+       
         return new Promise((s, f)=>{
                     
             let usr = {};
@@ -62,11 +58,12 @@ class Chat extends Model{
             Chat.find(ownEmail, ctcEmail).then(chats=>{
                 console.log(chats);
                 if (chats.empty){
+                    console.log('Chats empty');
                     Chat.create(ownEmail, ctcEmail).then(chat=>{
-                        console.log(chat);
                         s(chat);
                     });
-                }else{                    
+                }else{    
+                    console.log(chats);                
                     chats.forEach(chat => {
                         s(chat)
                     });
