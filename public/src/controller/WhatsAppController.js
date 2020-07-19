@@ -295,8 +295,7 @@ initEvents(){
                     Chat.createIfNotExist(btoa(this._user.email).toString(), btoa(contact.email).toString())
                         .then(chat=>{
                             contact.chatId = chat.id;
-                            this._user.chatId = chat.id;
-                            console.log('exist', exist);
+                            this._user.chatId = chat.id;                           
                             if (!chat.exists){
                                 contact.addContact(this._user);
                                 this._user.addContact(contact).then(()=>{
