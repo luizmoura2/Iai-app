@@ -538,7 +538,15 @@ initEvents(){
         });
 
         this.el.btnFinishMicrophone.on('click', e=>{
-            console.log('finish record');
+            
+            this._microphoneController.on('recorded', (file, metadata)=>{
+                Message.sendAudio(this._contactActive.chatId, 
+                                  this._user.email, 
+                                  file,
+                                  metadata,
+                                  this._user.photo
+                                );
+            });
             this._microphoneController.stopRecord();
             this.closeRecordMicrofone();
         })
@@ -608,7 +616,7 @@ initEvents(){
     };/* Fim initEvents */
 
     setAtiveChat(ctc){
-        console.log(ctc);
+        
         if (this._contactActive){
             Message.getRef(this._contactActive.chatId).onSnapshot(()=>{});
         }
@@ -681,10 +689,10 @@ initEvents(){
                                         this._user.chatId = chat.id;                                        
                                         this._user.addContact(contact);                                        
                                         contact.addContact(this._user);
-                                        console.log(contact._data);
+                                        
                                         this.setAtiveChat(contact._data);
                                     });                           
-                    });
+                                });
                         });
                     }
 
