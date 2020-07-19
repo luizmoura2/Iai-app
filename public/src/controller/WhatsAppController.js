@@ -293,13 +293,17 @@ initEvents(){
                 if (data.name){
                    
                     Chat.createIfNotExist(btoa(this._user.email).toString(), btoa(contact.email).toString())
-                        .then(chat=>{
+                        .then((chat, exist)=>{
                             contact.chatId = chat.id;
                             this._user.chatId = chat.id;
-                            contact.addContact(this._user);
-                            this._user.addContact(contact).then(()=>{
-                               this.el.btnClosePanelAddContact.click();
-                            });
+                            console.log('exist', exist);
+                            if (!chat.exists){
+                                contact.addContact(this._user);
+                                this._user.addContact(contact).then(()=>{
+                                this.el.btnClosePanelAddContact.click();
+                                });
+                            }
+                            this.el.btnClosePanelAddContact.click();
                     });
 
                 }else{
@@ -685,12 +689,17 @@ initEvents(){
                                 ).then(chat=>{
                                     let contact = new User(message.content.email);
                                     contact.on('datachange', data=>{
-                                        contact.chatId = chat.id;
-                                        this._user.chatId = chat.id;                                        
-                                        this._user.addContact(contact);                                        
-                                        contact.addContact(this._user);
+                                        if (!chat.exists){ 
+
+                                            contact.chatId = chat.id;
+                                            this._user.chatId = chat.id;                                                                             
+                                            this._user.addContact(contact);                                        
+                                            contact.addContact(this._user);
+                                            this.setAtiveChat(contact._data);
+                                            
+                                        }
                                         
-                                        this.setAtiveChat(contact._data);
+                                        
                                     });                           
                                 });
                         });

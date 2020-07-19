@@ -58,14 +58,14 @@ class Chat extends Model{
             Chat.find(ownEmail, ctcEmail).then(chats=>{
                 console.log(chats);
                 if (chats.empty){
-                    console.log('Chats empty');
+
                     Chat.create(ownEmail, ctcEmail).then(chat=>{
                         s(chat);
                     });
                 }else{    
-                    console.log(chats);                
+                                   
                     chats.forEach(chat => {
-                        s(chat)
+                        s(chat);
                     });
                 }
             }).catch(err=>{
