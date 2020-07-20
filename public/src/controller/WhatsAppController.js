@@ -1,17 +1,57 @@
 class WhatsAppController{
 
     constructor(){
-
+        this._active = true;
         this._firebase = new Firebase();
         this._docs = [];
         this.initAuth();
         this.elementsPrototype();
         this.loadElements();
         this.initEvents();
-        
+        this.checkNotifications();
 
     }
     
+    checkNotifications(){
+        if (typeof Notification === 'function'){
+
+            if (Notification.permission !== 'granted'){
+                this.el.alertNotificationPermission.show();
+            }else{
+                this.el.alertNotificationPermission.hide();
+            }
+
+            this.el.alertNotificationPermission.on('click', e=>{
+                Notification.requestPermission(permisson=>{
+                    if (permisson === 'granted'){
+                        this.el.alertNotificationPermission.hide();
+                        console.info('permitido');
+                    }
+                });
+            })
+        }
+    }
+
+    notification(data){
+
+        if (Notification.permission === 'granted' && !this._active ){
+            let n = new Notification(this._contactActive.name, {
+                icon: this._contactActive.photo,
+                body: data.content
+            });
+
+            let sound = new Audio('./audio/alert.mp3');
+            sound.currentTime = 0;
+            sound.play();
+
+            setTimeout(()=>{
+                if (n){
+                    n.close();
+                }
+            }, 4000);
+        }
+    }
+
     initAuth(){
         
         this._firebase.initAuth().then(response=>{
@@ -215,6 +255,14 @@ class WhatsAppController{
  * @memberof WhatsAppController
  */
 initEvents(){
+
+        window.addEventListener('focus', e=>{
+            this._active = true;
+        });
+
+        window.addEventListener('blur', e=>{
+            this._active = false;
+        });
 
         this.el.inputSearchContacts.on('keyup', e=>{
             
@@ -660,7 +708,7 @@ initEvents(){
 
         let container = this.el.panelMessagesContainer;
         container.innerHTML = '';
-
+        this._messageReceived = [];
         Message.getRef(this._contactActive.chatId)
             .orderBy('timeStamp')
             .onSnapshot( docs => {
@@ -672,10 +720,20 @@ initEvents(){
                     let data = doc.data();
                     data.id = doc.id;                                    
                     let message = new Message();
+                    let own = (data.from === this._user.email);
                     message.fromJson(data);
 
+                    if (!own  && this._messageReceived.filter(id=>{ 
+                            return (id === data.id); 
+                        }).length === 0){
+
+                        this.notification(data);
+                        this._messageReceived.push(data.id);
+
+                    }
+
                     let divData = container.querySelector('#_'+data.id);
-                    let own = (data.from === this._user.email);
+                    
                     let view = message.getViewElement(own);
 
                     if (!divData){
