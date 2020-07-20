@@ -119,7 +119,7 @@ class WhatsAppController{
                     spanName.title = ctc.name;
                     spanName.innerHTML = ctc.name;
                 let spanLastTimeMsg = div.querySelector('.js-last-msg');
-                    spanLastTimeMsg.innerHTML = ctc.lastMessageTime;
+                    spanLastTimeMsg.innerHTML = Format.timeStampToTime(ctc.lastMessageTime);
                 let spanLastMsg = div.querySelector('.js-msg-ok');
                     spanLastMsg.innerHTML = ctc.lastMessage; 
                 if (ctc.photo){
@@ -209,6 +209,7 @@ class WhatsAppController{
         };
 
     }/** fim de  elementsPrototype()*/
+
 /**
  * Atribuições de eventos dos componetes da tela
  * @memberof WhatsAppController
@@ -246,6 +247,21 @@ initEvents(){
 
         this.el.photoContainerEditProfile.on('click', e=>{
             this.el.inputProfilePhoto.click();
+        });
+        
+        /** Evento responsável pela troca de imagem do perfil do usuário */
+        this.el.inputProfilePhoto.on('change', e=>{
+            if (this.el.inputProfilePhoto.files.length > 0){
+                let file = this.el.inputProfilePhoto.files[0];
+                Upload.send(file, this._user.email).then(snapshot=>{
+                    snapshot.ref.getDownloadURL().then(downLoadFile=>{
+                        this._user.photo = downLoadFile;
+                        this._user.save().then(()=>{
+                            this.el.btnClosePanelEditProfile.click();
+                        });
+                    });
+                });
+            }
         });
 
         this.el.inputNamePanelEditProfile.on('keypress', e=>{
@@ -562,6 +578,7 @@ initEvents(){
                 this.el.btnSend.click();
             }
         });
+
         this.el.inputText.on('keyup', e=>{
             if (this.el.inputText.innerHTML.length){
                 this.el.inputPlaceholder.hide();
@@ -575,10 +592,15 @@ initEvents(){
         });
 
         this.el.btnSend.on('click', e=>{
-            Message.send(this._contactActive.chatId, this._user.email, 'text', this.el.inputText.innerHTML);
+
+            let message = this.el.inputText.innerHTML;
+            Message.send(this._contactActive.chatId, this._user.email, 'text', message);
+            /*Atualiza o contato com ultima msg enviada e a hora do envio*/
+            this._user.updateContact(this._contactActive.email, message);
+
             this.el.inputText.innerHTML= '';
             this.el.panelEmojis.removeClass('open');
-            console.log(this.el.inputText.innerHTML);
+            
         });
 
         this.el.btnEmojis.on('click', e=>{

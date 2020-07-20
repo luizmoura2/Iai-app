@@ -79,6 +79,16 @@ class User extends Model{
             .set(contact.toJson());
     };
 
+    updateContact(userTo, message){
+        User.getRef().doc(userTo).collection('contacts').doc(btoa(this.email))
+                    .set({
+                        lastMessage: message, 
+                        lastMessageTime : new Date()
+                    },{
+                        merge: true
+                    });
+    }
+
     getContacts(filter = ''){
         
         return new Promise((s, f)=>{

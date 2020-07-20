@@ -496,7 +496,9 @@ class Message extends Model{
     }
 
     static upload(file, from){
-        return new Promise((s, f)=>{
+
+        return Upload.send(file, from);
+        /*return new Promise((s, f)=>{
 
             let uploadTask = Firebase.hd().ref(from)
                     .child(Date.now()+'_'+file.name)
@@ -509,7 +511,7 @@ class Message extends Model{
             }, ()=>{
                 s(uploadTask.snapshot);
             });
-        })
+        })*/
 
     }
 
