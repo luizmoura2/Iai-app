@@ -2,7 +2,7 @@ class Firebase{
 
     constructor(params) {
         window._initFirebase = false;
-        // Your web app's Firebase configuration
+        // Your web app's Firebase configuration87
         this._config = {
             apiKey: "AIzaSyBCi8KpzYF-MWI7rwKUL3B9qPrF9O8cv5Y",
             authDomain: "wharsapp-clone.firebaseapp.com",
@@ -10,7 +10,7 @@ class Firebase{
             projectId: "wharsapp-clone",
             storageBucket: "wharsapp-clone.appspot.com",
             messagingSenderId: "855608229717",
-            appId: "1:855608229717:web:01bb5e5b5a75c60f5039dc"
+            appId: "1:855608229718:web:01bb5e5b5a75c60f5039dc"
         };
         this.init();
         
